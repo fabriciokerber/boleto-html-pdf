@@ -12,7 +12,7 @@ services:
       - /code/node_modules # Evita conflitos com os módulos instalados no container
     environment:
       - NODE_ENV=development # Ou production, dependendo do seu ambiente
-    depends_on:
+  #  depends_on:
       # Adicione outros serviços que sua aplicação depende, como banco de dados
       # Exemplo:
       # - database
