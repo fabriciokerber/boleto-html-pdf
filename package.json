@@ -5,14 +5,13 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-     "start": "node server.js"
+    "start": "node server.js"
   },
   "author": "Fabricio Kerber",
   "license": "ISC",
   "dependencies": {
     "express": "^5.1.0",
-    "html-pdf": "^3.0.1",
-    "phantomjs-prebuilt": "^2.1.16",
-    "server": "^1.0.41"
+    "puppeteer": "^21.5.2",
+    "body-parser": "^1.20.2"
   }
 }
