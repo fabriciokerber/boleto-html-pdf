@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3100:3100" # Ajuste a porta se necessário
+    volumes:
+      - .:/code
+      - /code/node_modules # Evita conflitos com os módulos instalados no container
+    environment:
+      - NODE_ENV=development # Ou production, dependendo do seu ambiente
+    depends_on:
+      # Adicione outros serviços que sua aplicação depende, como banco de dados
+      # Exemplo:
+      # - database
+
+  # Se você tiver um banco de dados, adicione a configuração aqui
+  # database:
+  #   image: postgres:13
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     - POSTGRES_USER=seu_usuario
+  #     - POSTGRES_PASSWORD=sua_senha
+  #     - POSTGRES_DB=seu_banco_de_dados
+
