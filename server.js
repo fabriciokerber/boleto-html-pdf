@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const pdf = require('html-pdf');
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
@@ -10,7 +10,6 @@ const PORT = process.env.PORT || 3100;
 // Middleware
 app.use(bodyParser.text({ type: '*/*', limit: '10mb' })); // recebe o HTML como texto
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs'))); // servir os PDFs via URL
-app.use('/b', express.static(path.join(__dirname, 'b'))); // servir os PDFs via URL
 
 // Garante que a pasta exista
 const pdfDir = path.join(__dirname, 'pdfs');
@@ -24,26 +23,27 @@ app.post('/gerar-pdf', async (req, res) => {
     return res.status(400).json({ erro: 'HTML não enviado no corpo da requisição' });
   }
 
-  const nomeArquivo = `boleto-${Date.now()}.pdf`;
-  const caminhoArquivo = path.join(pdfDir, nomeArquivo);
+  try {
+    const browser = await puppeteer.launch({ headless: "new" });
+    const page = await browser.newPage();
+    await page.setContent(html);
 
-  const options = {
-    format: 'A4',
-    printBackground: true,
-    border: {
-      top: '10mm',
-      bottom: '10mm',
-      left: '10mm',
-      right: '10mm',
-    },
-    timeout: 30000,
-  };
+    const nomeArquivo = `boleto-${Date.now()}.pdf`;
+    const caminhoArquivo = path.join(pdfDir, nomeArquivo);
 
-  pdf.create(html, options).toFile(caminhoArquivo, (err, result) => {
-    if (err) {
-      console.error('Erro ao gerar PDF:', err);
-      return res.status(500).json({ erro: 'Falha ao gerar PDF' });
-    }
+    await page.pdf({
+      path: caminhoArquivo,
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '10mm',
+        bottom: '10mm',
+        left: '10mm',
+        right: '10mm',
+      },
+    });
+
+    await browser.close();
 
     const pdfBuffer = fs.readFileSync(caminhoArquivo);
     const base64 = pdfBuffer.toString('base64');
@@ -53,10 +53,12 @@ app.post('/gerar-pdf', async (req, res) => {
       base64,
       url
     });
-  });
+  } catch (error) {
+    console.error('Erro ao gerar PDF:', error);
+    return res.status(500).json({ erro: 'Falha ao gerar PDF' });
+  }
 });
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
-
