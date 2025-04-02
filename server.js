@@ -24,9 +24,8 @@ app.post('/gerar-pdf', async (req, res) => {
   }
 
   try {
-    const browser = await puppeteer.launch({ 
-      headless: "new",
-      executablePath: '/usr/bin/chromium-browser'
+    const browser = await puppeteer.connect({
+      browserWSEndpoint: 'ws://chrome:3000'
     });
     const page = await browser.newPage();
     await page.setContent(html);
