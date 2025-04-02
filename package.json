@@ -9,6 +9,7 @@
   "author": "Fabricio Kerber",
   "license": "ISC",
   "dependencies": {
+    "express": "^5.1.0",
     "html-pdf": "^3.0.1",
     "phantomjs-prebuilt": "^2.1.16",
     "server": "^1.0.41"
