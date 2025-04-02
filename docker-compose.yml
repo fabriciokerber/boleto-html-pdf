@@ -16,7 +16,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - "MAX_CONCURRENT_SESSIONS=10"
+      - "MAX_CONCURRENT_SESSIONS=100"
     volumes:
       - chrome_data:/data # Persiste dados do chrome
 
