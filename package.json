@@ -1,0 +1,15 @@
+{
+  "name": "boleto-html-pdf",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Fabricio Kerber",
+  "license": "ISC",
+  "dependencies": {
+    "html-pdf": "^3.0.1",
+    "server": "^1.0.41"
+  }
+}
