@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3100;
 // Middleware
 app.use(bodyParser.text({ type: '*/*', limit: '10mb' })); // recebe o HTML como texto
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs'))); // servir os PDFs via URL
+app.use('/b', express.static(path.join(__dirname, 'b'))); // servir as imagens para codigo de barras
 
 // Garante que a pasta exista
 const pdfDir = path.join(__dirname, 'pdfs');
