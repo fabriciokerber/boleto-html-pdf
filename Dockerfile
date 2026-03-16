@@ -8,6 +8,8 @@ RUN npm install
 
 COPY . .
 
+RUN mkdir -p /app/pdfs
+
 EXPOSE 3100
 
 CMD ["node", "server.js"]
