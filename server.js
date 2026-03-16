@@ -6,8 +6,8 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3100;
-const BROWSER_WS_ENDPOINT =
-  process.env.BROWSER_WS_ENDPOINT || 'ws://chrome:3000';
+const EXECUTABLE_PATH =
+  process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser';
 
 app.use(bodyParser.text({ type: '*/*', limit: '10mb' }));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
@@ -22,32 +22,26 @@ app.get('/health', (req, res) => {
   res.json({
     ok: true,
     service: 'boleto-html-pdf',
-    browserWsEndpoint: BROWSER_WS_ENDPOINT
+    executablePath: EXECUTABLE_PATH
   });
 });
 
-async function connectWithRetry(retries = 10, delay = 3000) {
-  let lastError;
+async function launchBrowser() {
+  console.log('[BROWSER] Iniciando Chromium local...');
+  console.log('[BROWSER] Executable:', EXECUTABLE_PATH);
 
-  for (let i = 1; i <= retries; i++) {
-    try {
-      console.log(`[BROWSER] Tentativa ${i}/${retries} em ${BROWSER_WS_ENDPOINT}`);
-      const browser = await puppeteer.connect({
-        browserWSEndpoint: BROWSER_WS_ENDPOINT,
-        protocolTimeout: 300000
-      });
-      console.log('[BROWSER] Conectado com sucesso');
-      return browser;
-    } catch (error) {
-      lastError = error;
-      console.error(`[BROWSER] Falha na tentativa ${i}:`, error.message);
-      if (i < retries) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-    }
-  }
-
-  throw lastError;
+  return puppeteer.launch({
+    executablePath: EXECUTABLE_PATH,
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-zygote'
+    ],
+    protocolTimeout: 300000
+  });
 }
 
 app.post('/gerar-pdf', async (req, res) => {
@@ -61,7 +55,7 @@ app.post('/gerar-pdf', async (req, res) => {
 
   try {
     console.log('[PDF] Iniciando geração...');
-    browser = await connectWithRetry();
+    browser = await launchBrowser();
 
     const page = await browser.newPage();
 
@@ -114,5 +108,5 @@ app.post('/gerar-pdf', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-  console.log(`🌐 Browser endpoint configurado: ${BROWSER_WS_ENDPOINT}`);
+  console.log(`🌐 Chromium local: ${EXECUTABLE_PATH}`);
 });
