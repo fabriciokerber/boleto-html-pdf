@@ -18,7 +18,7 @@ services:
   chrome:
     image: ghcr.io/browserless/chromium:latest
     ports:
-      - "3000:3000"
+      - "3011:3000"
     environment:
       TOKEN: meu-token-fixo
       CONCURRENT: 10
