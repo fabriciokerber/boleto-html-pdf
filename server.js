@@ -7,20 +7,17 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3100;
 const BROWSER_WS_ENDPOINT =
-  process.env.BROWSER_WS_ENDPOINT || 'ws://chrome:3000?token=meu-token-fixo';
+  process.env.BROWSER_WS_ENDPOINT || 'ws://chrome:3000';
 
-// Middleware
 app.use(bodyParser.text({ type: '*/*', limit: '10mb' }));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 app.use('/b', express.static(path.join(__dirname, 'b')));
 
-// Garante que a pasta exista
 const pdfDir = path.join(__dirname, 'pdfs');
 if (!fs.existsSync(pdfDir)) {
   fs.mkdirSync(pdfDir, { recursive: true });
 }
 
-// Healthcheck
 app.get('/health', (req, res) => {
   res.json({
     ok: true,
@@ -29,7 +26,30 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Rota principal
+async function connectWithRetry(retries = 10, delay = 3000) {
+  let lastError;
+
+  for (let i = 1; i <= retries; i++) {
+    try {
+      console.log(`[BROWSER] Tentativa ${i}/${retries} em ${BROWSER_WS_ENDPOINT}`);
+      const browser = await puppeteer.connect({
+        browserWSEndpoint: BROWSER_WS_ENDPOINT,
+        protocolTimeout: 300000
+      });
+      console.log('[BROWSER] Conectado com sucesso');
+      return browser;
+    } catch (error) {
+      lastError = error;
+      console.error(`[BROWSER] Falha na tentativa ${i}:`, error.message);
+      if (i < retries) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError;
+}
+
 app.post('/gerar-pdf', async (req, res) => {
   const html = req.body;
 
@@ -41,11 +61,7 @@ app.post('/gerar-pdf', async (req, res) => {
 
   try {
     console.log('[PDF] Iniciando geração...');
-    console.log('[PDF] Conectando no browser:', BROWSER_WS_ENDPOINT);
-
-    browser = await puppeteer.connect({
-      browserWSEndpoint: BROWSER_WS_ENDPOINT
-    });
+    browser = await connectWithRetry();
 
     const page = await browser.newPage();
 
