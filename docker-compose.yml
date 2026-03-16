@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   app:
     build:
@@ -8,17 +9,22 @@ services:
       - "3100:3100"
     depends_on:
       - chrome
+    environment:
+      PORT: 3100
+      BROWSER_WS_ENDPOINT: ws://chrome:3000?token=meu-token-fixo
     volumes:
-      - pdfs:/app/pdfs  # Persiste a pasta pdfs
+      - pdfs:/app/pdfs
 
   chrome:
-    image: browserless/chrome:latest
+    image: ghcr.io/browserless/chromium:latest
     ports:
-      - "3110:3110"
+      - "3000:3000"
     environment:
-      - "MAX_CONCURRENT_SESSIONS=100"
+      TOKEN: meu-token-fixo
+      CONCURRENT: 10
+      TIMEOUT: 300000
     volumes:
-      - chrome_data:/data # Persiste dados do chrome
+      - chrome_data:/data
 
 volumes:
   pdfs:
